@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOVT EVPG College Korba - Premier Educational Institution</title>
+    <style>
+        :root {
+            --primary: #FF5E7D;
+            --secondary: #4D77FF;
+            --accent: #F9CB40;
+            --dark: #2D3748;
+            --light: #F7FAFC;
+            --success: #48BB78;
+            --warning: #ED8936;
+            --info: #4299E1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--dark);
+            perspective: 1000px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform-style: preserve-3d;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .college-logo {
+            height: 80px;
+            width: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotateY(15deg);
+            box-shadow: -5px 5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .college-logo:hover {
+            transform: rotateY(0) scale(1.1);
+        }
+
+        .college-name {
+            text-align: center;
+            transform: translateZ(30px);
+        }
+
+        .college-name h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .college-name p {
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Navigation */
+        nav ul {
+            display: flex;
+            list-style: none;
+            transform-style: preserve-3d;
+        }
+
+        nav ul li {
+            margin-left: 1.5rem;
+            transform: translateZ(20px);
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav ul li a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://placehold.co/1920x1080') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            margin-bottom: -50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            transform-style: preserve-3d;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            transform: translateZ(50px);
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--dark);
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) translateZ(10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0) translateZ(5px);
+        }
+
+        /* About Section */
+        .about {
+            padding: 6rem 2rem;
+            background: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .about-content {
+            flex: 1;
+            min-width: 300px;
+            padding: 2rem;
+            transform-style: preserve-3d;
+        }
+
+        .about-content p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .about-image {
+            flex: 1;
+            min-width: 300px;
+            padding: 2rem;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .about-image-inner {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: rotateY(15deg);
+            transition: all 0.5s ease;
+        }
+
+        .about-image-inner:hover {
+            transform: rotateY(0) scale(1.05);
+        }
+
+        /* Courses Section */
+        .courses {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .course-image {
+            height: 200px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+
+        .course-card:hover .course-image img {
+            transform: scale(1.1);
+        }
+
+        .course-content {
+            padding: 1.5rem;
+        }
+
+        .course-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .course-content p {
+            color: var(--dark);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Facilities Section */
+        .facilities {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .facilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .facility-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .facility-card:hover {
+            transform: translateY(-10px) rotateY(10deg);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .facility-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .facility-card:hover .facility-icon {
+            color: white;
+        }
+
+        .facility-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .testimonial-slider {
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+
+        .testimonial {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 0 1rem;
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial:hover {
+            transform: translateY(-10px) translateZ(20px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .testimonial-content {
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 1rem;
+            border: 3px solid var(--accent);
+        }
+
+        .author-info {
+            text-align: left;
+        }
+
+        .author-name {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .author-position {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Contact */
+        .contact {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .contact-container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+            padding: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-icon {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-right: 1rem;
+        }
+
+        .info-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-form {
+            flex: 1;
+            min-width: 300px;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform-style: preserve-3d;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(249, 203, 64, 0.3);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--accent);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin-right: 1rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--accent);
+            color: var(--dark);
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 3D Effects */
+        .parallax {
+            transform-style: preserve-3d;
+
+            
+        }
+
+        .parallax-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .college-logo {
+                margin-bottom: 1rem;
+            }
+
+            nav ul {
+                margin-top: 1rem;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav ul li {
+                margin: 0.5rem 0;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .about .container,
+            .contact-container {
+                flex-direction: column;
+            }
+
+            .about-image {
+                margin-top: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="college-logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L1 8L12 14L23 8L12 2Z" fill="var(--primary)"/>
+                    <path d="M1 8L12 14V22" stroke="var(--accent)" stroke-width="2"/>
+                    <path d="M23 8L12 14V22" stroke="var(--accent)" stroke-width="2"/>
+                    <circle cx="12" cy="8" r="2" fill="var(--accent)"/>
+                </svg>
+            </div>
+            <div class="college-name">
+                <h1>GOVT EVPG COLLEGE KORBA</h1>
+                <p>Excellence in Education Since 1965</p>
+            </div>
+            <button class="nav-toggle">☰</button>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#courses">Courses</a></li>
+                    <li><a href="#facilities">Facilities</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <img src="https://gevpgkrb.ac.in/Content/389_483_Landscaping%20with%20trees%20and%20plants%20(1)%20(7.1.5).jpg" alt="Modern college campus of GOVT EVPG College Korba with students walking between neo-classical buildings under sunny skies">
+        <div class="hero-content">
+            <h2>Shape Your Future With Us</h2>
+            <p>Pursue excellence in a dynamic learning environment with state-of-the-art facilities and experienced faculty.</p>
+            <a href="#courses" class="btn">Explore Courses</a>
+        </div>
+    </section>
+
+    <!-- About their is no about section and therir and my thse is /SSection -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="section-title">
+                <h2>About Our College</h2>
+                <p>Discover our rich heritage and commitment to academic excellence</p>
+            </div>
+            <div class="about-content">
+                <p>Established in 1965, GOVT EVPG College Korba has been a beacon of higher education in the region, fostering intellectual growth and character development for over five decades.</p>
+                <p>Our institution offers a wide range of undergraduate and postgraduate programs across arts, science, and commerce faculties, supported by a team of highly qualified and dedicated faculty members.</p>
+                <p>The college is affiliated with Hemchand Yadav Vishwavidyalaya and recognized by UGC, ensuring the highest standards of education and research opportunities for our students.</p>
+                <a href="#contact" class="btn">Learn More</a>
+            </div>
+            <div class="about-image">
+                <div class="about-image-inner">
+                    <img src="https://placehold.co/800x600" alt="Historic main building of GOVT EVPG College Korba with colonial architecture surrounded by green lawns">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section class="courses" id="courses">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Courses</h2>
+                <p>Comprehensive academic programs designed for future success</p>
+            </div>
+            <div class="courses-grid">
+                <!-- Course 1 -->
+                <div class="course-card">
+                    <div class="course-image">
+                        <img src="https://gevpgkrb.ac.in/Content/389_483_Landscaping%20with%20trees%20and%20plants%20(1)%20(7.1.5).jpg" alt="Students conducting science experiments in well-equipped laboratory with modern instruments">
+                    </div>
+                    <div class="course-content">
+                        <h3>Bachelor of Science (B.Sc.)</h3>
+                        <p>Three-year degree programs in Physics, Chemistry, Mathematics, Botany, Zoology with modern laboratory facilities.</p>
+                        <a href="#" class="btn">Details</a>
+                    </div>
+                </div>
+
+              ,\f,<figcaption> </figcaption>
+        </kbd>
+        </data>
+                
+                <!-- Course 2 -->
+                <div class="course-card">
+                    <div class="course-image">
+                        <img src="https://gevpgkrb.ac.in/Content/389_483_Landscaping%20with%20trees%20and%20plants%20(1)%20(7.1.5).jpg" alt="Business students analyzing financial charts and data in a computer lab setting">
+                    </div>
+                    <div class="course-content">
+                        <h3>Bachelor of Computer Application (B.C.A)</h3>
+                        <p>Specializations focuses on advance skill in programming databases network ai and business application.</p>
+                        <a href="#" class="btn">Details</a>
+                    </div>
+                </div>
+                
+                <!-- Course 3 -->
+                <div class="course-card">
+                    <div class="course-image">
+                        <img src="https://placehold.co/600x400" alt="Literature students engaged in a seminar discussion in a traditional classroom with books">
+                    </div>
+                    <div class="course-content">
+                        <h3>Bachelor of Arts (B.A.)</h3>
+                        <p>Programs in History, Political Science, Economics, Hindi, English and Sociology with experienced faculty.</p>
+                        <a href="#" class="btn">Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section class="facilities" id="facilities">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Facilities</h2>
+                <p>World-class infrastructure for holistic development</p>
+            </div>
+            <div class="facilities-grid">
+                <!-- Facility 1 -->
+                <div class="facility-card">
+                    <div class="facility-icon">📚</div>
+                    <h3>Library</h3>
+                    <p>Central library with over 50,000 books, journals and digital resources with reading halls.</p>
+                </div>
+                
+                <!-- Facility 2 -->
+                <div class="facility-card">
+                    <div class="facility-icon">💻</div>
+                    <h3>Computer Lab</h3>
+                    <p>Modern computer center with 100+ systems, high-speed internet and latest software.</p>
+                </div>
+                
+                <!--Facility 3 -->
+                <div class="facility-card">
+                    <div class="facility-icon">🔬</div>
+                    <h3>Science Labs</h3>
+                    <p>Well-equipped labs for Physics, Chemistry, Botany and Zoology practicals.</p>
+                </div>
+                
+                <!-- Facility 4 -->
+                <div class="facility-card">
+                    <div class="facility-icon">🏟</div>
+                    <h3>Sports Complex</h3>
+                    <p>Spacious playgrounds and indoor facilities for various sports activities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>What Our Students Say</h2>
+                <p>Hear from our alumni about their experiences</p>
+            </div>
+            <div class="testimonial-slider">
+                <div class="testimonial">
+                    <div class="testimonial-content">
+                        <p>"My time at GOVT EVPG College shaped my career and personality. The faculty's guidance helped me secure a position at a leading multinational company after graduation."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <img src="https://placehold.co/100x100" alt="Portrait of Pratik singh , alumni of GOVT EVPG College">
+                        </div>
+                        <div class="author-info">
+                            <div class="author-name">Pratik Singh</div>
+                            <div class="author-position">B.C.A, Class of 2025</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>Contact Us</h2>
+                <p>Get in touch for admissions and inquiries</p>
+            </div>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="info-item">
+                        <div class="info-icon">📍</div>
+                        <div class="info-content">
+                            <h3>Address</h3>
+                            <p>College Road, Near Sahu books, Korba, Chhattisgarh 495677</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">📞</div>
+                        <div class="info-content">
+                            <h3>Phone</h3>
+                            <p>+91 6261472285 (Admissions)</p>
+                            <p>+91 8602224394 (Administration)</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">✉</div>
+                        <div class="info-content">
+                            <h3>Email</h3>
+                            <p>principal@evpgkorba.edu.in</p>
+                            <p>pratikid34@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" placeholder="Enter subject">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" placeholder="Enter your message"></textarea>
+                        </div>
+                        <button type="submit" class="btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>About Us</h3>
+                <p>GOVT EVPG College Korba is a premier institution of higher education committed to academic excellence and holistic development of students since 1965.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook">f</a>
+                    <a href="#" aria-label="Twitter">t</a>
+                    <a href="#" aria-label="Instagram">i</a>
+                    <a href="#" aria-label="YouTube">y</a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#courses">Courses</a></li>
+                    <li><a href="#facilities">Facilities</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Contact Info</h3>
+                <ul>
+                    <li>College Road near sahu books Korba</li>
+                    <li>Chhattisgarh 495677</li>
+                    <li>Phone: +91 6261472285</li>
+                    <li>Email: info@evpgkorba.edu.in</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 GOVT EVPG College Korba. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple JavaScript for interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nav toggle for mobile
+            const navToggle = document.querySelector('.nav-toggle');
+            const nav = document.querySelector('nav ul');
+            
+            if(navToggle) {
+                navToggle.addEventListener('click', function() {````
+                    nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+                });
+            }
+
+            // Parallax effect on scroll
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.pageYOffset;
+                const heroContent = document.querySelector('.hero-content');
+                const aboutImage = document.querySelector('.about-image-inner');
+                
+                if(heroContent) {
+                    heroContent.style.transform = translateY(${scrollPosition * 0.2}px) translateZ(50px);
+                }
+                
+                if(aboutImage) {
+                    aboutImage.style.transform = rotateY(${15 - scrollPosition * 0.02}deg);
+                }
+            });
+
+            // Course card hover effect enhancement
+            const courseCards = document.querySelectorAll('.course-card');
+            courseCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transition = 'all 0.3s ease';
+                });
+            });
+
+            // Smooth scrolling for anchor links
+            // the links is this mis an myy _n8um=-5 pri t (sqrt 90)
+            
+            // the link sis hlinks trh htwao thiseuf kry syw
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

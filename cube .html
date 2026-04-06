@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GARGANTUA — Interstellar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; background:#000; overflow:hidden; cursor:none; }
+
+  /* ── CURSOR ── */
+  #cursor {
+    position:fixed; width:6px; height:6px;
+    background:rgba(255,200,120,0.8); border-radius:50%;
+    pointer-events:none; z-index:9999;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 8px 2px rgba(255,180,80,0.5);
+    transition: transform 0.08s ease;
+  }
+
+  /* ── STARS ── */
+  #stars-canvas { position:fixed; inset:0; z-index:0; }
+
+  /* ── BLACK HOLE SCENE ── */
+  #scene {
+    position:fixed; inset:0; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    transition: transform 1.2s cubic-bezier(0.16,1,0.3,1),
+                opacity  1.2s cubic-bezier(0.16,1,0.3,1),
+                filter   1.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  #scene.pulled { transform: scale(0.08) translateY(-60vh); opacity:0; filter:blur(20px); }
+
+  #blackhole-wrapper {
+    position:relative; width:560px; height:560px;
+    cursor:grab; user-select:none;
+  }
+  #blackhole-wrapper:active { cursor:grabbing; }
+  #bh-canvas { position:absolute; inset:0; width:100%; height:100%; }
+
+  .lens-glow { position:absolute; border-radius:50%; pointer-events:none; }
+  .lens-glow-1 {
+    inset:-60px;
+    background:radial-gradient(circle, transparent 50%, rgba(60,25,5,0.12) 62%, rgba(30,12,2,0.06) 72%, transparent 80%);
+    animation:breathe 7s ease-in-out infinite alternate;
+  }
+  .lens-glow-2 {
+    inset:-20px;
+    background:radial-gradient(circle, transparent 52%, rgba(80,35,5,0.08) 60%, transparent 68%);
+    animation:breathe 5s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes breathe { from{opacity:0.55;} to{opacity:1;} }
+
+  /* ── TITLE & HINTS ── */
+  #scene-title {
+    position:fixed; top:36px; left:50%; transform:translateX(-50%);
+    z-index:5; text-align:center; pointer-events:none;
+    transition:opacity 0.8s ease;
+  }
+  #scene-title.hide { opacity:0; }
+  #scene-title .main {
+    font-family:'Cinzel',serif; font-size:0.75rem;
+    letter-spacing:0.6em; color:rgba(200,160,80,0.5); text-transform:uppercase;
+  }
+  #scene-title .sub {
+    font-family:'Cormorant Garamond',serif; font-size:0.65rem;
+    letter-spacing:0.3em; color:rgba(200,160,80,0.22); text-transform:uppercase; margin-top:4px;
+  }
+
+  #scroll-hint {
+    position:fixed; bottom:38px; left:50%; transform:translateX(-50%);
+    z-index:10; text-align:center; pointer-events:none;
+    opacity:0; animation:fadeHint 2s ease forwards 2.8s;
+    transition:opacity 0.6s ease;
+  }
+  #scroll-hint.hide { opacity:0 !important; animation:none; }
+  .hint-text {
+    font-family:'Cinzel',serif; font-size:0.52rem;
+    letter-spacing:0.45em; color:rgba(200,160,80,0.38); text-transform:uppercase;
+    display:block; margin-bottom:10px;
+  }
+  .scroll-wheel {
+    width:22px; height:36px; border:1px solid rgba(200,160,80,0.25);
+    border-radius:12px; margin:0 auto; position:relative;
+  }
+  .scroll-wheel::after {
+    content:''; position:absolute; width:3px; height:7px;
+    background:rgba(200,160,80,0.5); border-radius:2px;
+    left:50%; top:5px; transform:translateX(-50%);
+    animation:wheelScroll 2s ease-in-out infinite;
+  }
+  @keyframes wheelScroll {
+    0%{opacity:1;top:5px;} 60%{opacity:0;top:20px;} 61%{opacity:0;top:5px;} 100%{opacity:1;top:5px;}
+  }
+  @keyframes fadeHint {
+    from{opacity:0;transform:translateX(-50%) translateY(6px);}
+    to{opacity:1;transform:translateX(-50%) translateY(0);}
+  }
+
+  /* Velocity meter */
+  #velocity-meter {
+    position:fixed; left:36px; bottom:36px; z-index:10;
+    font-family:'Cinzel',serif; font-size:0.5rem;
+    letter-spacing:0.25em; color:rgba(200,160,80,0.3); text-transform:uppercase;
+    transition:opacity 0.6s;
+  }
+  #velocity-meter.hide { opacity:0; }
+  #velocity-bar-wrap { width:90px; height:1px; background:rgba(200,160,80,0.07); margin-top:5px; }
+  #velocity-bar {
+    height:100%; width:0%;
+    background:linear-gradient(90deg, rgba(200,130,40,0.4), rgba(255,180,80,0.7));
+    transition:width 0.15s ease;
+  }
+
+  /* ── SLIDE STACK ── */
+  #slide-stack {
+    position:fixed; inset:0; z-index:100;
+    pointer-events:none; overflow:hidden;
+  }
+  #slide-stack.active { pointer-events:all; }
+
+  .slide {
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:60px 40px;
+    background:radial-gradient(ellipse at center, rgba(4,4,7,0.95) 0%, rgba(0,0,0,0.99) 100%);
+    /* slides sit above/below viewport using translateY */
+    will-change: transform, opacity;
+  }
+
+  /* Progress bar at top */
+  #progress-bar {
+    position:fixed; top:0; left:0; height:1px; z-index:200;
+    background:linear-gradient(90deg, rgba(200,160,80,0.0), rgba(200,160,80,0.6), rgba(255,220,100,0.8));
+    width:0%; transition:width 0.5s ease;
+    pointer-events:none;
+  }
+
+  /* Nav dots */
+  #slide-nav {
+    position:fixed; right:40px; top:50%; transform:translateY(-50%);
+    z-index:200; display:flex; flex-direction:column; gap:12px;
+    opacity:0; transition:opacity 0.5s; pointer-events:none;
+  }
+  #slide-nav.visible { opacity:1; }
+  .nav-dot {
+    width:5px; height:5px; border-radius:50%;
+    background:rgba(200,160,80,0.18); border:1px solid rgba(200,160,80,0.35);
+    cursor:pointer; transition:all 0.3s; pointer-events:all;
+  }
+  .nav-dot.active {
+    background:rgba(200,160,80,0.85);
+    box-shadow:0 0 10px 3px rgba(200,160,80,0.3);
+    width:7px; height:7px;
+  }
+
+  /* Back button */
+  #back-btn {
+    position:fixed; top:30px; left:40px; z-index:300;
+    font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.28em;
+    color:rgba(200,160,80,0.45); text-transform:uppercase; cursor:pointer;
+    border:1px solid rgba(200,160,80,0.15); padding:9px 18px;
+    background:transparent; transition:all 0.3s;
+    opacity:0; pointer-events:none;
+  }
+  #back-btn.visible { opacity:1; pointer-events:all; }
+  #back-btn:hover { color:rgba(200,160,80,0.9); border-color:rgba(200,160,80,0.4); }
+
+  /* Slide counter */
+  #slide-counter {
+    position:fixed; bottom:36px; right:40px; z-index:200;
+    font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.3em;
+    color:rgba(200,160,80,0.3); text-transform:uppercase;
+    opacity:0; transition:opacity 0.5s; pointer-events:none;
+  }
+  #slide-counter.visible { opacity:1; }
+
+  /* ── SLIDE CONTENT TYPOGRAPHY ── */
+  .slide-content { max-width:760px; width:100%; text-align:center; }
+
+  .label {
+    font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.55em;
+    color:rgba(200,160,80,0.55); text-transform:uppercase; margin-bottom:22px;
+    display:block;
+  }
+  .slide-title {
+    font-family:'Cinzel',serif; font-size:clamp(1.9rem,4vw,3.6rem);
+    font-weight:300; color:#ede8df; line-height:1.15; margin-bottom:26px;
+    text-shadow:0 0 60px rgba(180,130,50,0.18);
+  }
+  .slide-title em { font-style:normal; color:rgba(220,170,80,0.9); }
+  .divider {
+    width:48px; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(200,160,80,0.45),transparent);
+    margin:0 auto 28px;
+  }
+  .slide-body {
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(0.95rem,1.7vw,1.18rem); font-weight:300;
+    color:rgba(230,220,200,0.52); line-height:1.98;
+    max-width:520px; margin:0 auto;
+  }
+  .stat-row { display:flex; gap:50px; justify-content:center; margin-top:14px; }
+  .stat { text-align:center; }
+  .stat-val {
+    font-family:'Cinzel',serif; font-size:1.85rem; font-weight:300;
+    color:rgba(210,165,70,0.9); display:block;
+    text-shadow:0 0 22px rgba(200,150,50,0.35);
+  }
+  .stat-key {
+    font-family:'Cormorant Garamond',serif; font-size:0.68rem;
+    letter-spacing:0.25em; color:rgba(200,160,80,0.38);
+    text-transform:uppercase; display:block; margin-top:5px;
+  }
+  .data-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; max-width:480px; margin:0 auto; }
+  .data-cell { border:1px solid rgba(200,160,80,0.07); padding:17px 20px; text-align:left; background:rgba(200,160,80,0.022); }
+  .data-cell-label { font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.3em; color:rgba(200,160,80,0.38); text-transform:uppercase; display:block; margin-bottom:7px; }
+  .data-cell-val { font-family:'Cormorant Garamond',serif; font-size:1.02rem; color:rgba(230,220,200,0.68); }
+  .quote {
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1.25rem,2.6vw,1.9rem); font-style:italic; font-weight:300;
+    color:rgba(230,220,200,0.75); line-height:1.68; position:relative; padding:0 28px;
+  }
+  .quote::before {
+    content:'\201C'; font-size:4.2rem; color:rgba(200,160,80,0.22);
+    position:absolute; top:-14px; left:-2px; line-height:1;
+  }
+  .quote-attr {
+    font-family:'Cinzel',serif; font-size:0.52rem;
+    letter-spacing:0.4em; color:rgba(200,160,80,0.38);
+    text-transform:uppercase; margin-top:20px; display:block;
+  }
+  .wormhole-art { width:170px; height:170px; margin:0 auto 32px; position:relative; }
+  .wr { position:absolute; border-radius:50%; border:1px solid; top:50%; left:50%; }
+  .wr:nth-child(1){width:170px;height:62px;border-color:rgba(200,160,80,0.5);animation:wspin 9s linear infinite;}
+  .wr:nth-child(2){width:148px;height:53px;border-color:rgba(200,160,80,0.3);animation:wspin 7s linear infinite reverse;}
+  .wr:nth-child(3){width:114px;height:40px;border-color:rgba(200,160,80,0.17);animation:wspin 5s linear infinite;}
+  .wr:nth-child(4){width:80px;height:28px;border-color:rgba(200,160,80,0.09);animation:wspin 3.5s linear infinite reverse;}
+  .wc { position:absolute; width:18px; height:18px; border-radius:50%; background:radial-gradient(circle,rgba(200,160,80,0.85) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 0 14px 5px rgba(200,160,80,0.22); }
+  @keyframes wspin {
+    from{transform:translate(-50%,-50%) rotateX(78deg) rotate(0deg);}
+    to{transform:translate(-50%,-50%) rotateX(78deg) rotate(360deg);}
+  }
+
+  @media(max-width:600px){
+    #blackhole-wrapper{width:310px;height:310px;}
+    .data-grid{grid-template-columns:1fr;}
+    .stat-row{gap:26px;}
+    #slide-nav{right:14px;}
+    #back-btn{left:14px;top:16px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<canvas id="stars-canvas"></canvas>
+<div id="progress-bar"></div>
+
+<div id="scene-title">
+  <div class="main">Gargantua</div>
+  <div class="sub">Scroll or drag to warp</div>
+</div>
+
+<div id="velocity-meter">
+  Escape Velocity
+  <div id="velocity-bar-wrap"><div id="velocity-bar"></div></div>
+</div>
+
+<div id="scroll-hint">
+  <span class="hint-text">Scroll to enter</span>
+  <div class="scroll-wheel"></div>
+</div>
+
+<div id="scene">
+  <div id="blackhole-wrapper">
+    <div class="lens-glow lens-glow-1"></div>
+    <div class="lens-glow lens-glow-2"></div>
+    <canvas id="bh-canvas"></canvas>
+  </div>
+</div>
+
+<!-- SLIDE STACK -->
+<div id="slide-stack">
+  <div class="slide" id="slide-0">
+    <div class="slide-content">
+      <span class="label">Year 2067 · Event Horizon</span>
+      <h1 class="slide-title">Do not go gentle<br/>into that <em>good night</em></h1>
+      <div class="divider"></div>
+      <p class="slide-body">You have crossed the event horizon. Beyond this threshold, time itself bends — one hour here is seven years back on Earth. Nothing, not even light, escapes Gargantua's pull.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="slide-1">
+    <div class="slide-content">
+      <span class="label">General Relativity · Kip Thorne</span>
+      <h1 class="slide-title">The <em>Singularity</em></h1>
+      <div class="divider"></div>
+      <div class="data-grid">
+        <div class="data-cell"><span class="data-cell-label">Mass</span><span class="data-cell-val">100 million M☉</span></div>
+        <div class="data-cell"><span class="data-cell-label">Spin parameter</span><span class="data-cell-val">0.998 c (near-maximal)</span></div>
+        <div class="data-cell"><span class="data-cell-label">Time dilation</span><span class="data-cell-val">1 hr = 7 Earth years</span></div>
+        <div class="data-cell"><span class="data-cell-label">Schwarzschild radius</span><span class="data-cell-val">≈ 295 million km</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide" id="slide-2">
+    <div class="slide-content">
+      <div class="wormhole-art">
+        <div class="wr"></div><div class="wr"></div><div class="wr"></div><div class="wr"></div>
+        <div class="wc"></div>
+      </div>
+      <span class="label">Near Saturn · 2067</span>
+      <h1 class="slide-title">The <em>Wormhole</em></h1>
+      <div class="divider"></div>
+      <p class="slide-body">A tunnel through the fabric of spacetime — placed there, perhaps, by beings who exist in five dimensions, for whom time is merely another axis to traverse at will.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="slide-3">
+    <div class="slide-content">
+      <span class="label">Temporal Mechanics</span>
+      <h1 class="slide-title">Love is the <em>dimension</em><br/>we don't understand</h1>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <div class="stat"><span class="stat-val">23</span><span class="stat-key">Years Lost</span></div>
+        <div class="stat"><span class="stat-val">3</span><span class="stat-key">Hrs on Miller's</span></div>
+        <div class="stat"><span class="stat-val">∞</span><span class="stat-key">Distance of Love</span></div>
+      </div>
+      <p class="slide-body" style="margin-top:28px">Time is not a straight line. Gravity curves it. Speed curves it. And perhaps, in some dimension we cannot yet perceive — love curves it too.</p>
+    </div>
+  </div>
+
+  <div class="slide" id="slide-4">
+    <div class="slide-content">
+      <div class="quote">
+        Mankind was born on Earth.<br/>It was never meant to die here.
+        <span class="quote-attr">— Cooper, Interstellar 2014</span>
+      </div>
+      <div class="divider" style="margin-top:34px"></div>
+      <p class="slide-body">Beyond the edge of known space, across a galaxy, through a singularity — fathers keep promises. Stars keep burning. Time keeps its silence.</p>
+    </div>
+  </div>
+</div>
+
+<div id="slide-nav">
+  <div class="nav-dot" onclick="goToSlide(0)"></div>
+  <div class="nav-dot" onclick="goToSlide(1)"></div>
+  <div class="nav-dot" onclick="goToSlide(2)"></div>
+  <div class="nav-dot" onclick="goToSlide(3)"></div>
+  <div class="nav-dot" onclick="goToSlide(4)"></div>
+</div>
+
+<button id="back-btn" onclick="exitSlides()">↩ Gargantua</button>
+<div id="slide-counter"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CURSOR
+// ══════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+
+// ══════════════════════════════════════════════
+// STAR FIELD
+// ══════════════════════════════════════════════
+const sc = document.getElementById('stars-canvas');
+const sctx = sc.getContext('2d');
+let stars = [];
+function resizeStars(){
+  sc.width = window.innerWidth; sc.height = window.innerHeight;
+  stars = Array.from({length:900}, () => ({
+    x: Math.random()*sc.width, y: Math.random()*sc.height,
+    r: Math.random()*1.1+0.1, a: Math.random()*0.65+0.15,
+    sp: Math.random()*0.012+0.003, ph: Math.random()*Math.PI*2
+  }));
+}
+let st = 0;
+(function animateStars(){
+  sctx.clearRect(0,0,sc.width,sc.height);
+  st += 0.016;
+  for(const s of stars){
+    const a = s.a*(0.4+0.6*Math.sin(st*s.sp*60+s.ph));
+    sctx.beginPath(); sctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    sctx.fillStyle=`rgba(255,255,255,${a})`; sctx.fill();
+  }
+  requestAnimationFrame(animateStars);
+})();
+resizeStars();
+window.addEventListener('resize', resizeStars);
+
+// ══════════════════════════════════════════════
+// BLACK HOLE CANVAS
+// ══════════════════════════════════════════════
+const bhc = document.getElementById('bh-canvas');
+const ctx = bhc.getContext('2d');
+const SIZE = 560;
+bhc.width = SIZE; bhc.height = SIZE;
+const CX = SIZE/2, CY = SIZE/2;
+const R_SHADOW = 152, R_PHOTON = 162;
+const DISK_RX = 252, DISK_RY_OUTER = 50, DISK_RY_INNER = 26;
+let T = 0;
+
+function drawGargantua(T){
+  ctx.clearRect(0,0,SIZE,SIZE);
+  const spacewarp = ctx.createRadialGradient(CX,CY,R_SHADOW*1.1,CX,CY,DISK_RX*1.35);
+  spacewarp.addColorStop(0,'rgba(0,0,0,0)');
+  spacewarp.addColorStop(0.72,'rgba(18,8,1,0.14)');
+  spacewarp.addColorStop(0.85,'rgba(10,4,0,0.07)');
+  spacewarp.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(CX,CY,DISK_RX*1.35,0,Math.PI*2);
+  ctx.fillStyle=spacewarp; ctx.fill();
+
+  renderDisk(T,'back');
+  renderLensedArc(T);
+
+  const pen = ctx.createRadialGradient(CX,CY,R_SHADOW*0.78,CX,CY,R_SHADOW*1.08);
+  pen.addColorStop(0,'rgba(0,0,0,1)'); pen.addColorStop(0.72,'rgba(0,0,0,1)');
+  pen.addColorStop(0.88,'rgba(0,0,0,0.96)'); pen.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(CX,CY,R_SHADOW*1.08,0,Math.PI*2);
+  ctx.fillStyle=pen; ctx.fill();
+  ctx.beginPath(); ctx.arc(CX,CY,R_SHADOW*0.82,0,Math.PI*2);
+  ctx.fillStyle='#000000'; ctx.fill();
+
+  renderPhotonRing(T);
+  renderDisk(T,'front');
+  renderISCO(T);
+}
+
+function renderDisk(T,half){
+  ctx.save(); ctx.translate(CX,CY);
+  ctx.beginPath();
+  if(half==='back') ctx.ellipse(0,0,DISK_RX,DISK_RY_OUTER,0,Math.PI,0,false);
+  else ctx.ellipse(0,0,DISK_RX,DISK_RY_OUTER,0,0,Math.PI,false);
+  ctx.closePath(); ctx.clip();
+
+  const bands=[
+    {rx:DISK_RX,    ry:DISK_RY_OUTER,   lw:13,la:half==='back'?0.18:0.28,lhot:'255,160,60', rcool:'50,12,2'},
+    {rx:DISK_RX-22, ry:DISK_RY_OUTER-7, lw:10,la:half==='back'?0.22:0.36,lhot:'255,180,80', rcool:'55,14,2'},
+    {rx:DISK_RX-44, ry:DISK_RY_OUTER-14,lw:9, la:half==='back'?0.28:0.44,lhot:'255,200,100',rcool:'60,16,2'},
+    {rx:DISK_RX-65, ry:DISK_RY_OUTER-20,lw:7, la:half==='back'?0.32:0.52,lhot:'255,220,130',rcool:'65,18,3'},
+    {rx:DISK_RX-85, ry:DISK_RY_OUTER-25,lw:6, la:half==='back'?0.35:0.58,lhot:'255,235,160',rcool:'70,20,3'},
+    {rx:DISK_RX-105,ry:DISK_RY_INNER+18,lw:5, la:half==='back'?0.38:0.65,lhot:'255,245,190',rcool:'75,22,3'},
+    {rx:DISK_RX-122,ry:DISK_RY_INNER+12,lw:4, la:half==='back'?0.40:0.70,lhot:'255,250,220',rcool:'80,24,4'},
+    {rx:DISK_RX-138,ry:DISK_RY_INNER+6, lw:3, la:half==='back'?0.42:0.75,lhot:'255,255,240',rcool:'85,26,4'},
+    {rx:DISK_RX-152,ry:DISK_RY_INNER,   lw:2.5,la:half==='back'?0.44:0.80,lhot:'255,255,255',rcool:'90,28,5'},
+  ];
+  for(const b of bands){
+    if(b.rx<=R_SHADOW*0.85||b.ry<=0) continue;
+    const flicker=0.035*Math.sin(T*11.3+b.rx*0.07);
+    const alpha=Math.max(0,b.la+flicker);
+    const dg=ctx.createLinearGradient(-b.rx,0,b.rx,0);
+    dg.addColorStop(0,   `rgba(${b.lhot},${alpha*1.0})`);
+    dg.addColorStop(0.08,`rgba(${b.lhot},${alpha*0.92})`);
+    dg.addColorStop(0.22,`rgba(240,140,40,${alpha*0.7})`);
+    dg.addColorStop(0.38,`rgba(180,80,15,${alpha*0.48})`);
+    dg.addColorStop(0.52,`rgba(120,45,8,${alpha*0.32})`);
+    dg.addColorStop(0.68,`rgba(${b.rcool},${alpha*0.22})`);
+    dg.addColorStop(0.82,`rgba(${b.rcool},${alpha*0.12})`);
+    dg.addColorStop(1,   `rgba(${b.rcool},${alpha*0.04})`);
+    ctx.beginPath(); ctx.ellipse(0,0,b.rx,b.ry,0,0,Math.PI*2);
+    ctx.strokeStyle=dg; ctx.lineWidth=b.lw; ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function renderPhotonRing(T){
+  const flicker=0.012*Math.sin(T*4.1);
+  const pg=ctx.createRadialGradient(CX,CY,R_PHOTON-14,CX,CY,R_PHOTON+18);
+  pg.addColorStop(0,'rgba(0,0,0,0)');
+  pg.addColorStop(0.3,'rgba(100,50,10,0.1)');
+  pg.addColorStop(0.5,'rgba(180,100,20,0.25)');
+  pg.addColorStop(0.65,'rgba(230,160,50,0.45)');
+  pg.addColorStop(0.72,'rgba(255,200,80,0.55)');
+  pg.addColorStop(0.8,'rgba(200,120,30,0.3)');
+  pg.addColorStop(0.9,'rgba(80,30,5,0.1)');
+  pg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(CX,CY,R_PHOTON+18,0,Math.PI*2);
+  ctx.fillStyle=pg; ctx.fill();
+  ctx.save(); ctx.translate(CX,CY);
+  ctx.beginPath(); ctx.arc(0,0,R_PHOTON,Math.PI*0.5,Math.PI*1.5,false);
+  ctx.strokeStyle=`rgba(255,240,180,${0.92+flicker})`; ctx.lineWidth=2.2;
+  ctx.shadowColor='rgba(255,220,120,0.9)'; ctx.shadowBlur=10; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,R_PHOTON,Math.PI*1.55,Math.PI*0.45,false);
+  ctx.strokeStyle=`rgba(200,100,25,${0.52+flicker})`; ctx.lineWidth=1.4;
+  ctx.shadowColor='rgba(200,100,20,0.4)'; ctx.shadowBlur=5; ctx.stroke();
+  ctx.shadowBlur=0; ctx.restore();
+}
+
+function renderLensedArc(T){
+  const pulse=0.5+0.18*Math.sin(T*1.6);
+  ctx.save(); ctx.translate(CX,CY);
+  ctx.beginPath(); ctx.arc(0,0,R_SHADOW+3,-Math.PI*0.82,-Math.PI*0.18,false);
+  ctx.strokeStyle=`rgba(255,210,110,${0.62*pulse})`; ctx.lineWidth=1.8;
+  ctx.shadowColor='rgba(255,190,80,0.7)'; ctx.shadowBlur=7; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,0,R_SHADOW+3,Math.PI*0.18,Math.PI*0.82,false);
+  ctx.strokeStyle=`rgba(160,70,15,${0.22*pulse})`; ctx.lineWidth=1;
+  ctx.shadowBlur=3; ctx.stroke();
+  ctx.shadowBlur=0; ctx.restore();
+}
+
+function renderISCO(T){
+  const a=0.7+0.15*Math.sin(T*5.3);
+  ctx.save(); ctx.translate(CX,CY);
+  ctx.beginPath(); ctx.ellipse(0,0,R_PHOTON-5,DISK_RY_INNER*0.55,0,0,Math.PI,false);
+  const ig=ctx.createLinearGradient(-R_PHOTON,0,R_PHOTON,0);
+  ig.addColorStop(0,`rgba(255,255,240,${a*0.85})`);
+  ig.addColorStop(0.15,`rgba(255,230,160,${a*0.7})`);
+  ig.addColorStop(0.4,`rgba(200,100,30,${a*0.4})`);
+  ig.addColorStop(0.65,`rgba(120,45,8,${a*0.2})`);
+  ig.addColorStop(1,`rgba(40,10,1,${a*0.05})`);
+  ctx.strokeStyle=ig; ctx.lineWidth=2.5;
+  ctx.shadowColor='rgba(255,230,150,0.6)'; ctx.shadowBlur=8; ctx.stroke();
+  ctx.shadowBlur=0; ctx.restore();
+}
+
+(function bhLoop(){ T+=0.016; drawGargantua(T); requestAnimationFrame(bhLoop); })();
+
+// ══════════════════════════════════════════════
+// DRAG VELOCITY on black hole → enters slides
+// ══════════════════════════════════════════════
+const wrapper = document.getElementById('blackhole-wrapper');
+const velBar  = document.getElementById('velocity-bar');
+let dragging=false, lastDX=0, lastDY=0, posX=0, posY=0;
+let velHistory=[], DRAG_THRESHOLD=15;
+let inSlides=false;
+
+function startDrag(x,y){ dragging=true; lastDX=x; lastDY=y; }
+function moveDrag(x,y){
+  if(!dragging||inSlides) return;
+  const dx=x-lastDX, dy=y-lastDY; lastDX=x; lastDY=y;
+  posX+=dx; posY+=dy;
+  wrapper.style.transform=`translate(${posX}px,${posY}px)`;
+  const mag=Math.sqrt(dx*dx+dy*dy);
+  velHistory.push(mag); if(velHistory.length>8) velHistory.shift();
+  const avg=velHistory.reduce((a,b)=>a+b,0)/velHistory.length;
+  velBar.style.width=Math.min(100,(avg/DRAG_THRESHOLD)*100)+'%';
+  if(avg>=DRAG_THRESHOLD) enterSlides();
+}
+function endDrag(){
+  dragging=false; velHistory=[]; velBar.style.width='0%';
+  if(!inSlides){
+    posX=0; posY=0;
+    wrapper.style.transition='transform 0.85s cubic-bezier(0.34,1.56,0.64,1)';
+    wrapper.style.transform='translate(0px,0px)';
+    setTimeout(()=>wrapper.style.transition='',850);
+  }
+}
+wrapper.addEventListener('mousedown', e=>startDrag(e.clientX,e.clientY));
+window.addEventListener('mousemove',  e=>moveDrag(e.clientX,e.clientY));
+window.addEventListener('mouseup',    endDrag);
+wrapper.addEventListener('touchstart',e=>startDrag(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+window.addEventListener('touchmove',  e=>moveDrag(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+window.addEventListener('touchend',   endDrag);
+
+// ══════════════════════════════════════════════
+// SCROLL-DRIVEN SLIDE SYSTEM
+// ══════════════════════════════════════════════
+const TOTAL = 5;
+let currentSlide = -1;   // -1 = BH screen
+let isAnimating  = false;
+let scrollAccum  = 0;
+const SCROLL_THRESHOLD = 80;
+
+// Touch swipe tracking
+let touchStartY = 0;
+
+const scene      = document.getElementById('scene');
+const slideStack = document.getElementById('slide-stack');
+const slideNav   = document.getElementById('slide-nav');
+const backBtn    = document.getElementById('back-btn');
+const counterEl  = document.getElementById('slide-counter');
+const progressEl = document.getElementById('progress-bar');
+const titleEl    = document.getElementById('scene-title');
+const hintEl     = document.getElementById('scroll-hint');
+const velMeter   = document.getElementById('velocity-meter');
+
+// Position all slides off-screen below initially
+function initSlidePositions(){
+  for(let i=0;i<TOTAL;i++){
+    const sl = document.getElementById(`slide-${i}`);
+    sl.style.transform = 'translateY(100vh)';
+    sl.style.opacity   = '0';
+    sl.style.transition = 'none';
+  }
+}
+initSlidePositions();
+
+function enterSlides(){
+  if(inSlides) return;
+  inSlides = true;
+  currentSlide = 0;
+
+  // Pull BH away
+  scene.classList.add('pulled');
+  titleEl.classList.add('hide');
+  hintEl.classList.add('hide');
+  velMeter.classList.add('hide');
+
+  slideStack.classList.add('active');
+  slideNav.classList.add('visible');
+  backBtn.classList.add('visible');
+  counterEl.classList.add('visible');
+
+  // Slide 0 swoops up from below
+  setTimeout(()=>{ showSlide(0, 'enter'); }, 350);
+}
+
+function exitSlides(){
+  if(!inSlides) return;
+  // Hide current slide downward
+  slideOut(currentSlide, 'down', ()=>{});
+  inSlides = false;
+  currentSlide = -1;
+  scrollAccum = 0;
+
+  scene.classList.remove('pulled');
+  titleEl.classList.remove('hide');
+  hintEl.classList.remove('hide');
+  velMeter.classList.remove('hide');
+
+  slideStack.classList.remove('active');
+  slideNav.classList.remove('visible');
+  backBtn.classList.remove('visible');
+  counterEl.classList.remove('visible');
+
+  posX=0; posY=0;
+  wrapper.style.transition='transform 1.1s cubic-bezier(0.34,1.56,0.64,1)';
+  wrapper.style.transform='translate(0px,0px)';
+  setTimeout(()=>wrapper.style.transition='',1100);
+
+  updateProgress(-1);
+}
+
+function showSlide(idx, direction){
+  const sl = document.getElementById(`slide-${idx}`);
+  // Start position
+  sl.style.transition = 'none';
+  sl.style.transform  = direction==='enter' || direction==='down-in'
+    ? 'translateY(100vh)' : 'translateY(-100vh)';
+  sl.style.opacity = '0';
+  // Force reflow
+  sl.offsetHeight;
+  // Animate in
+  sl.style.transition = 'transform 0.9s cubic-bezier(0.16,1,0.3,1), opacity 0.7s ease';
+  sl.style.transform  = 'translateY(0)';
+  sl.style.opacity    = '1';
+  updateDots(idx);
+  updateProgress(idx);
+  counterEl.textContent = `${String(idx+1).padStart(2,'0')} / ${String(TOTAL).padStart(2,'0')}`;
+}
+
+function slideOut(idx, direction, cb){
+  const sl = document.getElementById(`slide-${idx}`);
+  sl.style.transition = 'transform 0.65s cubic-bezier(0.4,0,0.6,1), opacity 0.55s ease';
+  sl.style.transform  = direction==='up' ? 'translateY(-100vh)' : 'translateY(100vh)';
+  sl.style.opacity    = '0';
+  setTimeout(cb, 650);
+}
+
+function goToNextSlide(){
+  if(isAnimating || currentSlide >= TOTAL-1) return;
+  isAnimating = true;
+  const from = currentSlide;
+  currentSlide++;
+  slideOut(from, 'up', ()=>{ isAnimating=false; });
+  showSlide(currentSlide, 'down-in');
+}
+
+function goToPrevSlide(){
+  if(isAnimating) return;
+  if(currentSlide <= 0){ exitSlides(); return; }
+  isAnimating = true;
+  const from = currentSlide;
+  currentSlide--;
+  slideOut(from, 'down', ()=>{ isAnimating=false; });
+  showSlide(currentSlide, 'up-in');
+}
+
+function goToSlide(idx){
+  if(!inSlides){ enterSlides(); setTimeout(()=>jumpToSlide(idx),700); return; }
+  jumpToSlide(idx);
+}
+
+function jumpToSlide(idx){
+  if(isAnimating || idx===currentSlide) return;
+  isAnimating=true;
+  const dir = idx>currentSlide ? 'up' : 'down';
+  const from=currentSlide; currentSlide=idx;
+  slideOut(from, dir, ()=>{ isAnimating=false; });
+  showSlide(idx, dir==='up'?'down-in':'up-in');
+}
+
+function updateDots(idx){
+  slideNav.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+}
+function updateProgress(idx){
+  if(idx<0){ progressEl.style.width='0%'; return; }
+  progressEl.style.width = ((idx+1)/TOTAL*100)+'%';
+}
+
+// ── WHEEL SCROLL ──
+window.addEventListener('wheel', e=>{
+  e.preventDefault();
+  if(!inSlides){
+    // On BH screen: accumulate scroll to enter
+    scrollAccum += Math.abs(e.deltaY);
+    if(scrollAccum > SCROLL_THRESHOLD){ scrollAccum=0; enterSlides(); }
+    return;
+  }
+  // In slides: navigate
+  scrollAccum += e.deltaY;
+  if(scrollAccum > SCROLL_THRESHOLD){
+    scrollAccum = 0;
+    goToNextSlide();
+  } else if(scrollAccum < -SCROLL_THRESHOLD){
+    scrollAccum = 0;
+    goToPrevSlide();
+  }
+}, { passive: false });
+
+// ── TOUCH SWIPE ──
+window.addEventListener('touchstart', e=>{
+  touchStartY = e.touches[0].clientY;
+}, {passive:true});
+
+window.addEventListener('touchend', e=>{
+  const dy = touchStartY - e.changedTouches[0].clientY;
+  if(Math.abs(dy) < 40) return;
+  if(!inSlides){
+    if(dy > 0) enterSlides(); return;
+  }
+  if(dy > 0) goToNextSlide();
+  else goToPrevSlide();
+}, {passive:true});
+
+// ── KEYBOARD 
+window.addEventListener('keydown', e=>{
+  if(!inSlides) return;
+  if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key===' ') goToNextSlide();
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft') goToPrevSlide();
+  if(e.key==='Escape') exitSlides();
+});
+</script>
+</body>
+</html>

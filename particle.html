@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Gen Gaming</title>
+    <style>
+        /* --- 1. CSS STYLING --- */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: 'Orbitron', sans-serif;
+            background-color: #050505; /* Deep black/grey */
+            color: white;
+        }
+
+        /* The Canvas stays fixed in the background */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1; /* Behind the text */
+        }
+
+        /* Main Scrollable Content */
+        main {
+            position: absolute;
+            width: 100%;
+            z-index: 1;
+        }
+
+        section {
+            display: grid;
+            place-items: center;
+            align-content: center;
+            height: 100vh; /* Full viewport height per section */
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* Typography and Glassmorphism effects */
+        h1 {
+            font-size: 5rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px #a945c7;
+            mix-blend-mode: overlay;
+        }
+
+        p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-left: 4px solid #00d2ff;
+            backdrop-filter: blur(5px);
+        }
+
+        .align-left { justify-items: start; }
+        .align-right { justify-items: end; text-align: right; }
+        
+        /* Scroll Indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+            40% {transform: translateY(-10px) translateX(-50%);}
+            60% {transform: translateY(-5px) translateX(-50%);}
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg"></canvas>
+
+    <main>
+        <section>
+            <h1>Level Up</h1>
+            <p>Experience the next generation of immersion. Scroll to explore.</p>
+            <div class="scroll-down">↓ SCROLL ↓</div>
+        </section>
+
+        <section class="align-left">
+            <h2>Precision Control</h2>
+            <p>Designed for eSports professionals. Zero latency, infinite possibilities.</p>
+        </section>
+
+        <section class="align-right">
+            <h2>Ergonomic Design</h2>
+            <p>Sculpted for the human hand. Play for hours without fatigue.</p>
+        </section>
+
+        <section>
+            <h2>Ready to Play?</h2>
+            <a href="#" style="color:#00d2ff; font-size: 2rem; text-decoration: none; border: 2px solid #00d2ff; padding: 1rem 2rem; border-radius: 50px; transition: 0.3s;">PRE-ORDER NOW</a>
+        </section>
+    </main>
+
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
+
+        // Setup Scene
+        const scene = new THREE.Scene();
+        
+        // Add Fog for depth
+        scene.fog = new THREE.FogExp2(0x050505, 0.03);
+
+        // Setup Camera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        // Setup Renderer
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.querySelector('#bg'),
+            antialias: true,
+            alpha: true // Allow CSS background to show through if needed
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // --- CONSTRUCTING THE CONTROLLER ---
+        // Since we aren't loading an external model file, we build a "Retro" one from shapes.
+        const controllerGroup = new THREE.Group();
+
+        // 1. The Main Body
+        const bodyGeometry = new THREE.BoxGeometry(3, 1.2, 0.5);
+        const bodyMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x222222, 
+            roughness: 0.4,
+            metalness: 0.8
+        });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        
+        // Round edges visually by adding side cylinders (simple hack)
+        const leftGripGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 32);
+        const leftGrip = new THREE.Mesh(leftGripGeo, bodyMaterial);
+        leftGrip.rotation.x = Math.PI / 2;
+        leftGrip.position.x = -1.5;
+        
+        const rightGrip = leftGrip.clone();
+        rightGrip.position.x = 1.5;
+
+        // 2. Buttons (A/B)
+        const btnGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 32);
+        const btnMatA = new THREE.MeshStandardMaterial({ color: 0xff0055, emissive: 0x550022 }); // Red Neon
+        const btnMatB = new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x004455 }); // Blue Neon
+        
+        const btnA = new THREE.Mesh(btnGeo, btnMatA);
+        btnA.rotation.x = Math.PI / 2;
+        btnA.position.set(0.8, 0.2, 0.3);
+
+        const btnB = new THREE.Mesh(btnGeo, btnMatB);
+        btnB.rotation.x = Math.PI / 2;
+        btnB.position.set(1.2, 0, 0.3);
+
+        // 3. D-Pad
+        const dpadGeo = new THREE.BoxGeometry(0.5, 0.15, 0.1);
+        const dpadMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        const dpadH = new THREE.Mesh(dpadGeo, dpadMat);
+        dpadH.position.set(-1, 0.1, 0.3);
+        const dpadV = dpadH.clone();
+        dpadV.rotation.z = Math.PI / 2;
+
+        // Add everything to group
+        controllerGroup.add(body, leftGrip, rightGrip, btnA, btnB, dpadH, dpadV);
+        scene.add(controllerGroup);
+
+        // --- LIGHTING ---
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        
+        // Neon Backlight
+        const blueLight = new THREE.PointLight(0x00d2ff, 2, 50);
+        blueLight.position.set(-5, 2, -2);
+        
+        const purpleLight = new THREE.PointLight(0xa945c7, 2, 50);
+        purpleLight.position.set(5, -2, -2);
+
+        scene.add(pointLight, ambientLight, blueLight, purpleLight);
+
+        // --- PARTICLES (Starfield effect) ---
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 700;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i++) {
+            // Random position between -10 and 10
+            posArray[i] = (Math.random() - 0.5) * 20; 
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.02,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+
+        // --- ANIMATION ON SCROLL ---
+        function moveCamera() {
+            const t = document.body.getBoundingClientRect().top;
+
+            // Rotate Controller based on scroll
+            controllerGroup.rotation.x = t * 0.005;
+            controllerGroup.rotation.y = t * 0.005;
+            controllerGroup.rotation.z = t * 0.002;
+
+            // Move Controller position slightly
+            // This creates the parallax "floating" effect
+            controllerGroup.position.x = t * -0.002; 
+
+            // Rotate particles opposite way for depth
+            particlesMesh.rotation.y = t * 0.001;
+
+            // Zoom camera slightly
+            camera.position.z = 5 + (t * -0.005);
+        }
+
+        document.body.onscroll = moveCamera;
+        moveCamera(); // Initialize
+
+        // --- ANIMATION LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Idle animation (floating effect when not scrolling)
+            controllerGroup.rotation.y += 0.002;
+            controllerGroup.position.y = Math.sin(Date.now() * 0.001) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
